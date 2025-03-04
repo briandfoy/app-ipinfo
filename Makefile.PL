@@ -65,7 +65,8 @@ my %WriteMakefile = (
 		},
 
 	'PREREQ_PM' => {
-		'Carp' => '0',
+		'Carp'            => '0',
+		'String::Sprintf' => '0',
 		},
 
 	'META_MERGE' => {
