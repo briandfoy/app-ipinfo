@@ -1,0 +1,8 @@
+#!perl
+use v5.20;
+use strict;
+use open qw(:std :utf8);
+
+use App::IPinfo;
+
+App::IPinfo->run(@ARGV);
