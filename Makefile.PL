@@ -52,6 +52,8 @@ my %WriteMakefile = (
 	'LICENSE'       => 'artistic_2',
 	'AUTHOR'        => 'brian d foy <briandfoy@pobox.com>',
 
+	'EXE_FILES'     => [ 'bin/ipinfo' ],
+
 	'CONFIGURE_REQUIRES' => {
 		'ExtUtils::MakeMaker'   => '6.64',
 		'File::Spec::Functions' => '0',
