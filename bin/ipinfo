@@ -3,6 +3,9 @@ use v5.20;
 use strict;
 use open qw(:std :utf8);
 
-use App::IPinfo;
+use App::ipinfo;
 
-App::IPinfo->run(@ARGV);
+my $opts = {};
+$opts->{format} = shift @ARGV if $ARGV[0] =~ /%/;
+
+App::ipinfo->run( $opts, @ARGV );

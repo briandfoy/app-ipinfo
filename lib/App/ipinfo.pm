@@ -5,33 +5,134 @@ use open qw(:std :utf8);
 
 use experimental qw(signatures);
 
-package App::IPinfo;
+package App::ipinfo;
 
+use Carp qw(croak);
 use Geo::IPinfo;
 use Encode qw(decode);
 use String::Sprintf;
 
+our $VERSION = '1.01';
+
 __PACKAGE__->run(@ARGV) unless caller();
+
+=encoding utf8
 
 =head1 NAME
 
+App::ipinfo - a command-line tool for IPinfo.io
+
 =head1 SYNOPSIS
 
+Call it as the program:
+
+	% ipinfo '%c' [ip addresses]
+
+Do it all at once:
+
+	use App::ipinfo;
+	App::ipinfo->run( \%options, @ip_addresses );
+
+Control most of it yourself:
+
+	use App::ipinfo;
+
+	my $app = App::ipinfo->new(
+		format => '%c',
+		token  => ...,
+		);
+
+	foreach my $ip ( @ip_addresses ) {
+		my $info = $app->get_info($ip);
+		next unless defined $info;
+		$app->output( $app->format($info) );
+		}
+
 =head1 DESCRIPTION
+
+=head2 Formatting
+
+Most of the data provided by IPinfo has an C<sprintf>-style formatting
+code, and for everything else you can use C<%j> to get JSON that you can
+format with B<jq> for some other tool.
+
+=over 4
+
+=item * C<%a> - the ASN of the organization
+
+=item * C<%c> - the city of the organization
+
+=item * C<%C> - the country code of the organization
+
+=item * C<%f> - the emoji flag of the country
+
+=item * C<%h> - the hostname for the IP address
+
+=item * C<%i> - the IP address
+
+=item * C<%j> - all the data as JSON
+
+=item * C<%k> - the continent of the organization
+
+=item * C<%L> - the latitude of the organization
+
+=item * C<%l> - the longitude of the organization
+
+=item * C<%n> - the country name of the organization
+
+=item * C<%N> - newline
+
+=item * C<%o> - the organization name
+
+=item * C<%r> - the region of the organization  (i.e. state or province)
+
+=item * C<%t> - the timezone of the organization  (e.g. C<America/New_York> )
+
+=item * C<%T> - tab
+
+=item * C<%%> - literal percent
+
+=back
 
 =head2 Class methods
 
 =over 4
 
-=item * new(TOKEN)
+=item * new( HASH )
+
+
+Allowed keys:
+
+=over 4
+
+=item * error_fh
+
+The filehandle to send error output to. The default is standard error.
+
+=item * format
+
+The template
+
+=item * output_fh
+
+The filehandle to send error output to. The default is standard output.
+
+=item * token
+
+The API token from IPinfo.io.
+
+=back
 
 =cut
 
+use Mojo::Util qw(dumper);
+
 sub new ($class, %hash) {
-	state $defaults => {
+	state $defaults = {
 		output_fh => $class->default_output_fh,
 		error_fh  => $class->default_error_fh,
 		format    => $class->default_format,
+		token     => $class->get_token,
 		};
 
 	my %args = ( $defaults->%*, %hash );
@@ -62,45 +163,13 @@ object. These are the same and use all the default settings:
 =cut
 
 sub run ($either, @args) {
-	my $app = ref $either ? $either : $either->new($ENV{IPINFO_TOKEN});
+	my $opts = ref $args[0] eq ref {} ? shift @args : {};
+	my $app = ref $either ? $either : $either->new($opts->%*);
 
-	my $format = do {
-		if( $args[0] =~ /%/ ) {
-			shift @args;
-			}
-		else {
-			$ENV{APP_IPINFO_FORMAT} // $app->default_format;
-			}
-		};
-
-	my $ipinfo = Geo::IPinfo->new( $app->token // () );
-
-	state $ipv4_pattern = $app->get_ipv4_pattern;
-	state $ipv6_pattern = $app->get_ipv6_pattern;
-
-	ARG: foreach my $arg (@args) {
-		my $method = do {
-			if( $arg =~ $ipv4_pattern ) {
-				'info';
-				}
-			elsif( $arg =~ $ipv6_pattern ) {
-				'info_v6'
-				}
-			else {
-				$app->error( "<$arg> does not look like an IP address. Skipping." );
-				next ARG;
-				}
-			};
-
-		my $info = $ipinfo->$method($arg);
-		$app->decode_info($info);
-
-		unless( defined $info ) {
-			$app->error( "Could not get info for <$arg>." );
-			next ARG;
-			}
-
-		$app->output( $app->format( $format, $info ) );
+	ARG: foreach my $ip (@args) {
+		my $info = $app->get_info($ip);
+		next ARG unless defined $info;
+		$app->output( $app->format( $info ) );
 		}
 	}
 
@@ -145,6 +214,15 @@ for the city. See the L</Formats> section.
 =cut
 
 sub default_format ($app) { '%c' }
+
+=item * default_output_fh
+
+Returns the default for the error filehandle. In this module, it's
+standard error.
+
+=cut
+
+sub default_output_fh { \*STDOUT }
 
 =item * error(MESSAGE)
 
@@ -247,9 +325,43 @@ Formats a L<Geo::Details> object according to template.
 
 =cut
 
-sub format ($app, $template, $info) {
+sub format ($app, $info) {
 	state $formatter = $app->formatter;
-	$formatter->sprintf( $template, $info );
+	$formatter->sprintf( $app->{format}, $info );
+	}
+
+=item * get_info(IP_ADDRESS)
+
+=cut
+
+sub get_info ($app, $ip ) {
+	state $ipinfo = Geo::IPinfo->new( $app->token );
+	state $ipv4_pattern = $app->get_ipv4_pattern;
+	state $ipv6_pattern = $app->get_ipv6_pattern;
+
+	my $method = do {
+		if( $ip =~ $ipv4_pattern ) {
+			'info';
+			}
+		elsif( $ip =~ $ipv6_pattern ) {
+			'info_v6'
+			}
+		else {
+			$app->error( "<$ip> does not look like an IP address. Skipping." );
+			next ARG;
+			}
+		};
+
+	my $info = $ipinfo->$method($ip);
+
+	unless( defined $info ) {
+		$app->error( "Could not get info for <$ip>." );
+		return;
+		}
+
+	$app->decode_info($info);
+
+	return $info;
 	}
 
 =item * get_ipv4_pattern
@@ -282,6 +394,17 @@ sub get_ipv6_pattern ($app) {
 	)
 	\z
 	/x;
+	}
+
+=item * get_token
+
+Return the API token. So far, this is just the value in the C<APP_IPINFO_TOKEN>
+environment variable.
+
+=cut
+
+sub get_token ($class) {
+	$ENV{APP_IPINFO_TOKEN}
 	}
 
 =item * output(MESSAGE)
@@ -320,21 +443,32 @@ sub token ($app) { $app->{token} }
 
 =item * IPinfo.io, L<https://ipinfo.io>
 
-=cut
+=back
 
 =head1 SOURCE AVAILABILITY
 
+The main source repository is in Github, and there are backup repos
+in other services:
+
+=over 4
+
+=item * L<https://github.com/briandfoy/app-ipinfo>
+
+=item * L<https://bitbucket.org/briandfoy/app-ipinfo>
+
+=item * L<https://gitlab.com/briandfoy/app-ipinfo>
+
+=item * L<https://codeberg.org/briandfoy/app-ipinfo>
+
+=back
 
 =head1 COPYRIGHT
 
-Copyright © 2020-2025, brian d foy, all rights reserved.
+Copyright © 2025, brian d foy, all rights reserved.
 
 =head1 LICENSE
 
 You can use this code under the terms of the Artistic License 2.
-
-=cut
-
 
 =cut
 
