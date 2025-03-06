@@ -179,7 +179,9 @@ sub run ($either, @args) {
 
 =over 4
 
-=item *
+=item * decode_info
+
+Fixup some issues in the API response.
 
 =cut
 
