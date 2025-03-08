@@ -270,29 +270,29 @@ sub formatter ($app) {
 			my $asn = $V->[0]->asn;
 			($asn) = $V->[0]->org =~ m/^AS(\d+)\s/ unless defined $asn;
 
-			sprintf "%${w}s", $asn;
+			sprintf "%${w}s", $asn  // '';
 			},
 		c   => sub ( $w, $v, $V, $l ) {
-			sprintf "%${w}s",  $V->[0]->city
+			sprintf "%${w}s",  $V->[0]->city // '';
 			},
 		C   => sub ( $w, $v, $V, $l ) {
-			sprintf "%${w}s",  $V->[0]->country
+			sprintf "%${w}s",  $V->[0]->country // '';
 			},
 
 		e   => sub ( $w, $v, $V, $l ) {
-			sprintf "%${w}s",  $V->[0]->abuse
+			sprintf "%${w}s",  $V->[0]->abuse // '';
 			},
 
 		f   => sub ( $w, $v, $V, $l ) {
-			sprintf "%${w}s",  $V->[0]->country_flag->{emoji};
+			sprintf "%${w}s",  $V->[0]->country_flag->{emoji}  // '';
 			},
 
 		h   => sub ( $w, $v, $V, $l ) {
-			sprintf "%${w}s",  $V->[0]->hostname
+			sprintf "%${w}s",  $V->[0]->hostname // '';
 			},
 
 		i   => sub ( $w, $v, $V, $l ) {
-			sprintf "%${w}s",  $V->[0]->ip
+			sprintf "%${w}s",  $V->[0]->ip // '';
 			},
 		j   => sub ( $w, $v, $V, $l ) {
 			use JSON;
@@ -301,30 +301,30 @@ sub formatter ($app) {
 			decode( 'UTF-8', encode_json($V->[0]->TO_JSON) );
 			},
 		k   => sub ( $w, $v, $V, $l ) {
-			sprintf "%${w}s", $V->[0]->continent->{name}
+			sprintf "%${w}s", $V->[0]->continent->{name} // '';
 			},
 
 
 		L   => sub ( $w, $v, $V, $l ) {
-			sprintf "%${w}f", $V->[0]->latitude
+			sprintf "%${w}f", $V->[0]->latitude // '';
 			},
 		l   => sub ( $w, $v, $V, $l ) {
-			sprintf "%${w}f", $V->[0]->longitude
+			sprintf "%${w}f", $V->[0]->longitude // '';
 			},
 
 		n   => sub ( $w, $v, $V, $l ) {
-			sprintf "%${w}s", $V->[0]->country_name
+			sprintf "%${w}s", $V->[0]->country_name // '';
 			},
 
 		o   => sub ( $w, $v, $V, $l ) {
-			sprintf "%${w}s",  $V->[0]->org
+			sprintf "%${w}s",  $V->[0]->org // '';
 			},
 		r   => sub ( $w, $v, $V, $l ) {
-			sprintf "%${w}s",  $V->[0]->region
+			sprintf "%${w}s",  $V->[0]->region // '';
 			},
 
 		t   => sub ( $w, $v, $V, $l ) {
-			sprintf "%${w}s",  $V->[0]->timezone
+			sprintf "%${w}s",  $V->[0]->timezone // '';
 			},
 
 		N   => sub { "\n" },
