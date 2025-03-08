@@ -1,4 +1,5 @@
 #!perl
+use utf8;
 use v5.20;
 use strict;
 use open qw(:std :utf8);
@@ -70,7 +71,7 @@ format with B<jq> for some other tool.
 
 =item * C<%i> - the IP address
 
-=item * C<%j> - all the data as JSON
+=item * C<%j> - all the data as JSON, in a UTF-8 decoded string
 
 =item * C<%k> - the continent of the organization
 
@@ -189,7 +190,6 @@ sub run ($either, @args) {
 
 =over 4
 
-=item * decode_info
 =cut
 
 # https://stackoverflow.com/a/45943193/2766176
@@ -216,6 +216,7 @@ sub _compact_ipv6 {
     return $str;
 }
 
+=item * decode_info
 
 Fixup some issues in the API response.
 
@@ -231,6 +232,7 @@ sub decode_info ($app, $info) {
 				push @queue, $i->{$key};
 				next KEY;
 				}
+			next if utf8::is_utf8($i->{$key});
 			$i->{$key} = decode( 'UTF-8', $i->{$key} );
 			}
 		}
@@ -398,6 +400,7 @@ sub get_info ($app, $ip ) {
 			'info';
 			}
 		elsif( $ip =~ $ipv6_pattern ) {
+			$ip = _compact_ipv6($ip);
 			'info_v6'
 			}
 		else {
