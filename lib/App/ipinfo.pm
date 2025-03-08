@@ -305,10 +305,16 @@ sub formatter ($app) {
 
 
 		L   => sub ( $w, $v, $V, $l ) {
-			sprintf "%${w}f", $V->[0]->latitude // '';
+			defined $V->[0]->latitude ?
+				sprintf "%${w}f", $V->[0]->latitude
+				:
+				'';
 			},
 		l   => sub ( $w, $v, $V, $l ) {
-			sprintf "%${w}f", $V->[0]->longitude // '';
+			defined $V->[0]->longitude ?
+				sprintf "%${w}f", $V->[0]->longitude
+				:
+				'';
 			},
 
 		n   => sub ( $w, $v, $V, $l ) {
