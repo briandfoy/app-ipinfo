@@ -58,4 +58,25 @@ subtest 'formats' => sub {
 		}
 	};
 
+subtest 'empty response' => sub {
+	my $info = bless {
+		continent    => {},
+		country_flag => {},
+		meta         => {},
+		}, 'Geo::Details';
+
+	foreach my $row ( @table ) {
+		my( $label, $template ) = $row->@*;
+		next if $template =~ /%[NT%]/;
+
+		subtest $label => sub {
+			my $app = $class->new( template => $template );
+			isa_ok $app, $class;
+			isa_ok $info, 'Geo::Details';
+			my $s = $app->format($info);
+			is $app->format($info), '', 'output is correct';
+			};
+		}
+	};
+
 done_testing();
