@@ -68,6 +68,7 @@ my %WriteMakefile = (
 
 	'PREREQ_PM' => {
 		'Carp'            => '0',
+		'Geo::IPinfo'     => '0',
 		'String::Sprintf' => '0',
 		},
 
