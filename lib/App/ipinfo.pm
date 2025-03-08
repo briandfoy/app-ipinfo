@@ -391,20 +391,18 @@ sub get_info ($app, $ip ) {
 	 	$g->{base_url_ipv6} = $g->{base_url};
 	 	$g;
 	 	};
-	state $ipv4_pattern = $app->get_ipv4_pattern;
-	state $ipv6_pattern = $app->get_ipv6_pattern;
 
 	my $method = do {
-		if( $ip =~ $ipv4_pattern ) {
+		if( $app->looks_like_ipv4($ip) ) {
 			'info';
 			}
-		elsif( $ip =~ $ipv6_pattern ) {
+		elsif( $app->looks_like_ipv6($ip) ) {
 			$ip = _compact_ipv6($ip);
 			'info_v6'
 			}
 		else {
 			$app->error( "<$ip> does not look like an IP address. Skipping." );
-			next ARG;
+			return;
 			}
 		};
 
@@ -425,36 +423,25 @@ sub get_info ($app, $ip ) {
 	return $info;
 	}
 
-=item * get_ipv4_pattern
+=item * looks_like_ipv4(IP)
 
-Returns the regular expression that matches an IPv4 address.
+Returns true if IP looks like an IPv4 address.
 
 =cut
 
-sub get_ipv4_pattern ($app) {
-	qr/
-	\A
-	(
-		(\d+) (?: \. \d+ ){3}
-	)
-	\z
-	/x;
+sub looks_like_ipv4 ($app, $ip) {
+	Net::CIDR::cidrvalidate($ip);
 	}
 
-=item * get_ipv6_pattern
+=item * looks_like_ipv6(IP)
 
-Returns the regular expression that matches an IPv6 address.
+Returns true if IP looks like an IPv6 address.
 
 =cut
 
-sub get_ipv6_pattern ($app) {
-	qr/
-	\A
-	(
-		[0-9:]+
-	)
-	\z
-	/x;
+sub looks_like_ipv6 ($app, $ip) {
+	my $compact = _compact_ipv6($ip);
+	Net::CIDR::cidrvalidate($compact);
 	}
 
 =item * get_token

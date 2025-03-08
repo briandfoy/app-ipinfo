@@ -71,7 +71,7 @@ subtest 'run, class, bad IPv4' => sub {
 	close $stderr;
 
 	is $out, undef, 'output is not defined';
-	like $err, qr/Could not get info/, 'output is expected';
+	like $err, qr/does not look like an IP address/, 'error is expected';
 	};
 
 subtest 'run, app' => sub {
