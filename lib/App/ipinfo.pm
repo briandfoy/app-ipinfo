@@ -38,8 +38,8 @@ Control most of it yourself:
 	use App::ipinfo;
 
 	my $app = App::ipinfo->new(
-		format => '%c',
-		token  => ...,
+		template => '%c',
+		token    => ...,
 		);
 
 	foreach my $ip ( @ip_addresses ) {
@@ -109,9 +109,9 @@ Allowed keys:
 
 The filehandle to send error output to. The default is standard error.
 
-=item * format
+=item * template
 
-The template
+The template.
 
 =item * output_fh
 
@@ -125,13 +125,11 @@ The API token from IPinfo.io.
 
 =cut
 
-use Mojo::Util qw(dumper);
-
 sub new ($class, %hash) {
 	state $defaults = {
 		output_fh => $class->default_output_fh,
 		error_fh  => $class->default_error_fh,
-		format    => $class->default_format,
+		template  => $class->default_template,
 		token     => $class->get_token,
 		};
 
@@ -140,11 +138,21 @@ sub new ($class, %hash) {
 	bless \%args, $class;
 	}
 
-=item * CLASS->run( [FORMAT,] IP_ADDRESS [, IP_ADDRESS ... ] )
+=item * looks_like_template(STRING)
 
-=item * OBJ->run( [FORMAT,] IP_ADDRESS [, IP_ADDRESS ... ] )
+Returns true if STRING looks like a template. That is, it has a C<%s>.
 
-Format every IP address according to FORMAT and send the result to
+=cut
+
+sub looks_like_template ($either, $string) {
+	-1 < index $string, '%'
+	}
+
+=item * CLASS->run( [TEMPLATE,] IP_ADDRESS [, IP_ADDRESS ... ] )
+
+=item * OBJ->run( [TEMPLATE,] IP_ADDRESS [, IP_ADDRESS ... ] )
+
+Format every IP address according to TEMPLATE and send the result to
 the output filehandle.
 
 If the first argument looks like a template (has a C<%>), it is used
@@ -161,6 +169,7 @@ object. These are the same and use all the default settings:
 	App::ipfinfo->run( @ip_addresses );
 
 =cut
+use Mojo::Util qw(dumper);
 
 sub run ($either, @args) {
 	my $opts = ref $args[0] eq ref {} ? shift @args : {};
@@ -190,7 +199,7 @@ sub decode_info ($app, $info) {
 
 	ITEM: while( my $i = shift @queue ) {
 		KEY: foreach my $key ( keys $i->%* ) {
-			if( ref $i->{$key} ) {
+			if( ref $i->{$key} eq ref {} ) {
 				push @queue, $i->{$key};
 				next KEY;
 				}
@@ -208,14 +217,14 @@ standard error.
 
 sub default_error_fh { \*STDERR }
 
-=item * default_format
+=item * default_template
 
 Returns the default template for output. In this modules, it's C<%c>,
 for the city. See the L</Formats> section.
 
 =cut
 
-sub default_format ($app) { '%c' }
+sub default_template ($app) { '%c' }
 
 =item * default_output_fh
 
@@ -289,7 +298,7 @@ sub formatter ($app) {
 			decode( 'UTF-8', encode_json($V->[0]->TO_JSON) );
 			},
 		k   => sub ( $w, $v, $V, $l ) {
-			sprintf "%${w}s", $V->[0]->continent
+			sprintf "%${w}s", $V->[0]->continent->{name}
 			},
 
 
@@ -329,7 +338,7 @@ Formats a L<Geo::Details> object according to template.
 
 sub format ($app, $info) {
 	state $formatter = $app->formatter;
-	$formatter->sprintf( $app->{format}, $info );
+	$formatter->sprintf( $app->template, $info );
 	}
 
 =item * get_info(IP_ADDRESS)
@@ -426,6 +435,12 @@ Return the filehandle for output.
 =cut
 
 sub output_fh ($app) { $app->{output_fh} }
+
+=item * template
+
+=cut
+
+sub template ($app) { $app->{template} }
 
 =item * token
 
