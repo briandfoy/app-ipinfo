@@ -223,6 +223,7 @@ Fixup some issues in the API response.
 =cut
 
 sub decode_info ($app, $info) {
+	return unless defined $info;
 	my @queue = $info;
 	return $info if $info->meta->{from_cache} == 1;
 
@@ -413,8 +414,13 @@ sub get_info ($app, $ip ) {
 	my @values = grep { eval { $_->isa('Geo::Details') } } values %$info;
 	$info = shift @values if @values;
 
-	unless( eval { $info->isa('Geo::Details') } ) {
+	unless( defined $info and eval { $info->isa('Geo::Details') } ) {
 		$app->error( "Could not get info for <$ip>." );
+		return;
+		}
+
+	if( exists $info->{bogon} and $info->{bogon} eq 'True' ) {
+		$app->error( "<$ip> is a bogon." );
 		return;
 		}
 

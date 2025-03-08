@@ -15,6 +15,7 @@ subtest 'sanity' => sub {
 	can_ok $class, $method;
 	};
 
+# these should fail validation
 subtest 'bad IPs' => sub {
 	my @bad_ips = qw(
 		345.0.0.1
@@ -31,6 +32,7 @@ subtest 'bad IPs' => sub {
 				output_fh => $stdout,
 				error_fh  => $stderr,
 				);
+			isa_ok $app, $class;
 
 			$app->$method($ip);
 
@@ -39,6 +41,40 @@ subtest 'bad IPs' => sub {
 
 			is $out, undef, 'nothing in standard output';
 			like $err, qr/does not look like an IP address/, "error output notes <$ip> does not look like an IP address";
+			};
+		}
+	};
+
+# these should pass validation but fail to get info
+subtest 'bogon' => sub {
+	my @bogons = qw(
+		10.0.0.1
+		192.168.1.1
+		::
+		::1
+		2001:db8::
+		);
+
+	foreach my $ip ( @bogons ) {
+		subtest $ip => sub {
+			open my $stdout, '>:raw', \ my $out;
+			open my $stderr, '>:raw', \ my $err;
+
+			my $app = $class->new(
+				output_fh => $stdout,
+				error_fh  => $stderr,
+				);
+			isa_ok $app, $class;
+
+			ok cidrvalidate($ip), "<$ip> validates";
+
+			$app->$method($ip);
+
+			close $stderr;
+			close $stdout;
+
+			is $out, undef, 'nothing in standard output';
+			like $err, qr/is a bogon/, "error output notes <$ip> is a bogon";
 			};
 		}
 	};
