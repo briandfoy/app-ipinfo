@@ -267,7 +267,7 @@ sub formatter ($app) {
 	my $formatter = String::Sprintf->formatter(
 		a   => sub ( $w, $v, $V, $l ) {
 			my $asn = $V->[0]->asn;
-			($asn) = $V->[0]->org =~ m/^AS(\d+)\s/ unless defined $asn;
+			($asn) = ($V->[0]->org // '') =~ m/^AS(\d+)\s/ unless defined $asn;
 
 			sprintf "%${w}s", $asn  // '';
 			},
