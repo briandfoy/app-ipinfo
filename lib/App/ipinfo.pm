@@ -169,7 +169,6 @@ object. These are the same and use all the default settings:
 	App::ipfinfo->run( @ip_addresses );
 
 =cut
-use Mojo::Util qw(dumper);
 
 sub run ($either, @args) {
 	my $opts = ref $args[0] eq ref {} ? shift @args : {};
@@ -177,7 +176,7 @@ sub run ($either, @args) {
 
 	ARG: foreach my $ip (@args) {
 		my $info = $app->get_info($ip);
-		next ARG unless defined $info;
+		next ARG unless eval { $info->isa('Geo::Details') };
 		$app->output( $app->format( $info ) );
 		}
 	}
@@ -368,7 +367,12 @@ sub get_info ($app, $ip ) {
 
 	my $info = $ipinfo->$method($ip);
 
-	unless( defined $info ) {
+	# https://github.com/ipinfo/perl/pull/32
+	# cache hit is doubly wrapped in object
+	my @values = grep { eval { $_->isa('Geo::Details') } } values %$info;
+	$info = shift @values if @values;
+
+	unless( eval { $info->isa('Geo::Details') } ) {
 		$app->error( "Could not get info for <$ip>." );
 		return;
 		}
