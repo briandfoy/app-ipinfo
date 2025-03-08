@@ -195,6 +195,7 @@ Fixup some issues in the API response.
 
 sub decode_info ($app, $info) {
 	my @queue = $info;
+	return $info if $info->meta->{from_cache} == 1;
 
 	ITEM: while( my $i = shift @queue ) {
 		KEY: foreach my $key ( keys $i->%* ) {
