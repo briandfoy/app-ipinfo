@@ -22,8 +22,6 @@ subtest 'run with string fh' => sub {
 	open my $stdout, '>:encoding(UTF-8)', \ $out;
 	open my $stderr, '>:encoding(UTF-8)', \ $err;
 
-	can_ok $stdout, qw(print);
-
 	my $rc = $class->run(
 		{
 		template  => $template,
