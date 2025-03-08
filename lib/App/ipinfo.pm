@@ -367,7 +367,6 @@ sub formatter ($app) {
 
 		N   => sub { "\n" },
 		T   => sub { "\t" },
-		'%' => sub { '%'  },
 		);
 	}
 
