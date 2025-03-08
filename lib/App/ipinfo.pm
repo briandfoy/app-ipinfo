@@ -140,12 +140,14 @@ sub new ($class, %hash) {
 
 =item * looks_like_template(STRING)
 
-Returns true if STRING looks like a template. That is, it has a C<%s>.
+Returns true if STRING looks like a template. That is, it has a C<%>
+followed by a non-whitespace character. This will get more sophisticated
+later.
 
 =cut
 
 sub looks_like_template ($either, $string) {
-	-1 < index $string, '%'
+	$string =~ m/%\S/;
 	}
 
 =item * CLASS->run( [TEMPLATE,] IP_ADDRESS [, IP_ADDRESS ... ] )
