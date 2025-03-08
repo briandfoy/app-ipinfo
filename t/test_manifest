@@ -4,6 +4,7 @@ pod.t
 pod_coverage.t
 default_template.t
 looks_like_template.t
+ipv6.t
 format.t
 json.t
 run.t
