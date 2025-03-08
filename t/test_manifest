@@ -4,3 +4,4 @@ pod.t
 pod_coverage.t
 default_template.t
 format.t
+run.t
