@@ -1,5 +1,8 @@
+use utf8;
+
 use strict;
 use warnings;
+use open qw(:std :utf8);
 
 use Test::More;
 
@@ -17,17 +20,42 @@ subtest 'sanity' => sub {
 	can_ok $app, 'new', $method;
 	};
 
-subtest 'format' => sub {
-	my $template = '%k';
 
-	my $app = $class->new( template => $template );
-	isa_ok $app, $class;
+my $ip = '1.1.1.1';
+my @table = (
+	[ ASN          => '%a' => '13335' ],
+	[ city         => '%c' => 'Brisbane' ],
+	[ country      => '%C' => 'AU' ],
+	[ abuse        => '%e' => '' ],
+	[ flag         => '%f' => '🇦🇺' ],
+	[ hostname     => '%h' => 'one.one.one.one' ],
+	[ ip           => '%i' => $ip ],
+	[ continent    => '%k' => 'Oceania' ],
+	[ latitude     => '%L' => '-27.482000' ],
+	[ longitude    => '%l' => '153.013600' ],
+	[ country_name => '%n' => 'Australia' ],
+	[ organization => '%o' => 'AS13335 Cloudflare, Inc.' ],
+	[ timezone     => '%t' => 'Australia/Brisbane' ],
+	[ newline      => '%N' => "\n" ],
+	[ tab          => '%T' => "\t" ],
+	[ percent      => '%%' => "%" ],
+	);
 
-	my $info = $class->get_info('1.1.1.1');
-	isa_ok $info, 'Geo::Details';
+subtest 'formats' => sub {
+	foreach my $row ( @table ) {
+		my( $label, $template, $expected ) = $row->@*;
 
-	my $s = $app->format($info);
-	is $app->format($info), 'Oceania', 'output is correct';
+		subtest $label => sub {
+			my $app = $class->new( template => $template );
+			isa_ok $app, $class;
+
+			my $info = $class->get_info('1.1.1.1');
+			isa_ok $info, 'Geo::Details';
+
+			my $s = $app->format($info);
+			is $app->format($info), $expected, 'output is correct';
+			};
+		}
 	};
 
 done_testing();
