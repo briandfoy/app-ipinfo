@@ -267,7 +267,10 @@ sub formatter ($app) {
 	# $l - letter
 	my $formatter = String::Sprintf->formatter(
 		a   => sub ( $w, $v, $V, $l ) {
-			sprintf "%${w}s",  $V->[0]->asn
+			my $asn = $V->[0]->asn;
+			($asn) = $V->[0]->org =~ m/^AS(\d+)\s/ unless defined $asn;
+
+			sprintf "%${w}s", $asn;
 			},
 		c   => sub ( $w, $v, $V, $l ) {
 			sprintf "%${w}s",  $V->[0]->city
