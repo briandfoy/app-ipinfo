@@ -5,5 +5,6 @@ pod_coverage.t
 default_template.t
 looks_like_template.t
 format.t
+json.t
 run.t
 live.t
