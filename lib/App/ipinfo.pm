@@ -425,7 +425,7 @@ Send the MESSAGE string to the output filehandle.
 =cut
 
 sub output ($app, $message) {
-	say { $app->output_fh } $message
+	print { $app->output_fh } $message
 	}
 
 =item * output_fh
