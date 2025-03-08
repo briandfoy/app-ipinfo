@@ -385,7 +385,11 @@ sub format ($app, $info) {
 =cut
 
 sub get_info ($app, $ip ) {
-	state $ipinfo = Geo::IPinfo->new( $app->token );
+	state $ipinfo = do {
+		my $g = Geo::IPinfo->new( $app->token );
+	 	$g->{base_url_ipv6} = $g->{base_url};
+	 	$g;
+	 	};
 	state $ipv4_pattern = $app->get_ipv4_pattern;
 	state $ipv6_pattern = $app->get_ipv6_pattern;
 
