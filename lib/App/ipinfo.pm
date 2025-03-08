@@ -190,6 +190,32 @@ sub run ($either, @args) {
 =over 4
 
 =item * decode_info
+=cut
+
+# https://stackoverflow.com/a/45943193/2766176
+sub _compact_ipv6 {
+    # taken from IPv6::Address on CPAN
+    my $str = shift;
+    return '::' if($str eq '0:0:0:0:0:0:0:0');
+    for(my $i=7;$i>1;$i--) {
+            my $zerostr = join(':',split('','0'x$i));
+            ###print "DEBUG: $str $zerostr \n";
+            if($str =~ /:$zerostr$/) {
+                    $str =~ s/:$zerostr$/::/;
+                    return $str;
+            }
+            elsif ($str =~ /:$zerostr:/) {
+                    $str =~ s/:$zerostr:/::/;
+                    return $str;
+            }
+            elsif ($str =~ /^$zerostr:/) {
+                    $str =~ s/^$zerostr:/::/;
+                    return $str;
+            }
+    }
+    return $str;
+}
+
 
 Fixup some issues in the API response.
 
