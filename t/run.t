@@ -33,6 +33,7 @@ subtest 'run with string fh' => sub {
 	}
 
 	is $out, 'Queensland', 'output is correct';
+	is $err, undef, 'error is not defined';
 	};
 
 done_testing();
