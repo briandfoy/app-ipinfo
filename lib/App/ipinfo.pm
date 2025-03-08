@@ -206,6 +206,8 @@ sub decode_info ($app, $info) {
 			$i->{$key} = decode( 'UTF-8', $i->{$key} );
 			}
 		}
+
+	$info->meta->{decoded} = 1;
 	};
 
 =item * default_error_fh
