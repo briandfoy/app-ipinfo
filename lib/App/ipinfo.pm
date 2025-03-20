@@ -13,7 +13,7 @@ use Geo::IPinfo;
 use Encode qw(decode);
 use String::Sprintf;
 
-our $VERSION = '1.01';
+our $VERSION = '1.011';
 
 __PACKAGE__->run(@ARGV) unless caller();
 
