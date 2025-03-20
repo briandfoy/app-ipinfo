@@ -69,6 +69,7 @@ my %WriteMakefile = (
 	'PREREQ_PM' => {
 		'Carp'            => '0',
 		'Geo::IPinfo'     => '0',
+		'Net::CIDR'       => '0.23', # https://github.com/svarshavchik/Net-CIDR/pull/2
 		'String::Sprintf' => '0',
 		},
 
