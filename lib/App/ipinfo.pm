@@ -409,6 +409,8 @@ sub get_info ($app, $ip ) {
 
 	my $info = $ipinfo->$method($ip);
 
+	$app->{last_response} = $info;
+
 	# https://github.com/ipinfo/perl/pull/32
 	# cache hit is doubly wrapped in object
 	my @values = grep { eval { $_->isa('Geo::Details') } } values %$info;
