@@ -526,7 +526,7 @@ in other services:
 
 =head1 COPYRIGHT
 
-Copyright © 2025, brian d foy, all rights reserved.
+Copyright © 2025-2026, brian d foy, all rights reserved.
 
 =head1 LICENSE
 
